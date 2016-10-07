@@ -4,10 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	reaper "github.com/ramr/go-reaper"
 )
@@ -40,6 +42,28 @@ func handleSignals() {
 	os.Exit(1)
 }
 
+// connect attempts to connect to the data store a number of times in case of
+// temporary network errors.
+func connect(store *Store, maxAttempts int) (err error) {
+	for attempts := 1; attempts <= maxAttempts; attempts++ {
+		if err = store.Connect(); err == nil {
+			break
+		}
+
+		// If it's a temporary network error, try again.
+		if nerr, ok := err.(net.Error); ok && nerr.Temporary() {
+			duration := time.Duration(attempts) * time.Second
+			log.Printf("Network error connecting to the database (attempt %d of %d): trying again in %s", attempts, maxAttempts, duration)
+			time.Sleep(duration)
+			continue
+		} else {
+			return
+		}
+	}
+
+	return
+}
+
 func init() {
 	// Initialise the flag options.
 	flag.BoolVar(&showVersion, "version", false, "display version information")
@@ -66,7 +90,7 @@ func main() {
 
 	// Connect to the data source.
 	store := NewStore(config.Dsn)
-	if err := store.Connect(); err != nil {
+	if err := connect(store, 20); err != nil {
 		log.Fatal(err)
 	}
 
