@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -9,11 +10,15 @@ import (
 	reaper "github.com/ramr/go-reaper"
 )
 
-// config stores the program configuration.
-var config struct {
-	Dsn           string
-	ServerAddress string
-}
+var (
+	// config stores the program configuration.
+	config struct {
+		Dsn           string
+		ServerAddress string
+	}
+	showVersion     bool
+	version, commit string
+)
 
 // getEnv returns the value of the environment variable name or def if the
 // variable is empty.
@@ -26,6 +31,7 @@ func getEnv(name, def string) (value string) {
 
 func init() {
 	// Initialise the flag options.
+	flag.BoolVar(&showVersion, "version", false, "display version information")
 	flag.StringVar(&config.Dsn, "dsn", getEnv("OGO_ICAL_DSN", ""), "postgresql Data Source Name")
 	flag.StringVar(&config.ServerAddress, "address", getEnv("OGO_ICAL_ADDRESS", ":8080"), "server address")
 }
@@ -35,6 +41,15 @@ func main() {
 	go reaper.Reap()
 
 	flag.Parse()
+
+	if showVersion {
+		if version != "" && commit != "" {
+			fmt.Printf("%s commit=%s\n", version, commit)
+		} else {
+			fmt.Println("No versioning information is available.")
+		}
+		os.Exit(0)
+	}
 
 	// Connect to the data source.
 	store := NewStore(config.Dsn)
