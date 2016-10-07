@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 	"time"
@@ -89,4 +90,9 @@ func (ec EventsCollection) EmitICal() goics.Componenter {
 	}
 
 	return c
+}
+
+// Write encodes the events in iCalendar format to w.
+func (ec EventsCollection) Write(w io.Writer) {
+	goics.NewICalEncode(w).Encode(ec)
 }

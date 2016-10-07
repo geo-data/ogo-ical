@@ -3,8 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-
-	"github.com/jordic/goics"
 )
 
 // CalendarHandler creates a http.Handler for dealing with calendar requests.
@@ -23,7 +21,7 @@ func CalendarHandler(store *Store) http.Handler {
 			log.Print(err)
 		} else {
 			// Encode the collection.
-			goics.NewICalEncode(w).Encode(collection)
+			collection.Write(w)
 		}
 	}
 
