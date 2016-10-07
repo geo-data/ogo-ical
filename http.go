@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/jordic/goics"
@@ -17,9 +18,13 @@ func CalendarHandler(store *Store) http.Handler {
 
 		q := r.URL.Query()
 		// Get the matching events.
-		collection := store.Events(q["user"], q["match"])
-		// Encode the collection.
-		goics.NewICalEncode(w).Encode(collection)
+		if collection, err := store.Events(q["user"], q["match"]); err != nil {
+			http.Error(w, err.Error(), 500)
+			log.Print(err)
+		} else {
+			// Encode the collection.
+			goics.NewICalEncode(w).Encode(collection)
+		}
 	}
 
 	return http.HandlerFunc(handler)

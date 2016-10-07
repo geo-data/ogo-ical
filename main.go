@@ -39,6 +39,6 @@ func main() {
 
 	// Start the HTTP server.
 	handler := CalendarHandler(store)
-	log.Printf("starting server on %s", config.ServerAddress)
+	log.Printf("Starting server on %s", config.ServerAddress)
 	log.Fatal(http.ListenAndServe(config.ServerAddress, handler))
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
@@ -27,7 +26,7 @@ func (s *Store) Connect() (err error) {
 }
 
 // Events returns an EventsCollection.  Events are filtered to match users and keywords.
-func (s *Store) Events(users, keywords []string) EventsCollection {
+func (s *Store) Events(users, keywords []string) (events EventsCollection, err error) {
 	var (
 		userpos, kwpos []string
 		userq, kwq     string
@@ -113,11 +112,6 @@ SELECT DISTINCT
     %s
   ORDER BY e.start_date DESC;`, userq, kwq)
 
-	events := EventsCollection{}
-	err := s.db.Select(&events, q, params...)
-	_ = s.db.Unsafe()
-	if err != nil {
-		log.Println(err)
-	}
-	return events
+	err = s.db.Select(&events, q, params...)
+	return
 }
