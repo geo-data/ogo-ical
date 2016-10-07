@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	reaper "github.com/ramr/go-reaper"
 )
@@ -29,6 +31,15 @@ func getEnv(name, def string) (value string) {
 	return
 }
 
+// handleSignals handles any termination signals.
+func handleSignals() {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	sig := <-c
+	log.Printf("Exiting on %s signal", sig.String())
+	os.Exit(1)
+}
+
 func init() {
 	// Initialise the flag options.
 	flag.BoolVar(&showVersion, "version", false, "display version information")
@@ -50,6 +61,8 @@ func main() {
 		}
 		os.Exit(0)
 	}
+
+	go handleSignals()
 
 	// Connect to the data source.
 	store := NewStore(config.Dsn)
