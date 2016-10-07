@@ -71,8 +71,8 @@ func (s *Store) Events(users, keywords []string) (events EventsCollection, err e
       AND logins.n = ca.company_id
       %s
 ), events AS (
-  SELECT d.start_date,
-         d.end_date,
+  SELECT ((((d.start_date AT TIME ZONE 'UTC')::timestamp without time zone)::timestamp with time zone) AT TIME ZONE 'UTC') AS start_date,
+         ((((d.end_date AT TIME ZONE 'UTC')::timestamp without time zone)::timestamp with time zone) AT TIME ZONE 'UTC') AS end_date,
          d.date_id,
          d.title,
          di.comment,
@@ -89,7 +89,7 @@ func (s *Store) Events(users, keywords []string) (events EventsCollection, err e
              AND c.company_id = dc.company_id) AS attendees
     FROM date_x d, date_info di
     WHERE d.date_id = di.date_id
-      AND d.start_date::date >= now()::date
+      AND (d.start_date AT TIME ZONE 'UTC')::date >= CURRENT_DATE
 )
 SELECT DISTINCT
        e.date_id AS id,
