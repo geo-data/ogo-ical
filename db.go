@@ -73,6 +73,7 @@ func (s *Store) Events(users, keywords []string) (events EventsCollection, err e
 ), events AS (
   SELECT ((((d.start_date AT TIME ZONE 'UTC')::timestamp without time zone)::timestamp with time zone) AT TIME ZONE 'UTC') AS start_date,
          ((((d.end_date AT TIME ZONE 'UTC')::timestamp without time zone)::timestamp with time zone) AT TIME ZONE 'UTC') AS end_date,
+         ((d.start_date AT TIME ZONE 'UTC')::time = '00:00:00'::time AND (d.end_date AT TIME ZONE 'UTC')::time = '23:59:00'::time) AS all_day,
          d.date_id,
          d.title,
          di.comment,
@@ -97,6 +98,7 @@ SELECT DISTINCT
        e.attendees,
        e.start_date,
        e.end_date,
+       e.all_day,
        e.location,
        e.comment,
        e.resource_names AS resources,

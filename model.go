@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -12,11 +13,20 @@ import (
 	"github.com/lib/pq"
 )
 
+// round is taken from <https://github.com/golang/go/issues/4594#issuecomment-135336012>
+func round(f float64) int {
+	if math.Abs(f) < 0.5 {
+		return 0
+	}
+	return int(f + math.Copysign(0.5, f))
+}
+
 // Event represents an ical event.
 type Event struct {
 	ID         int            `db:"id"`
 	Start      time.Time      `db:"start_date"`
 	End        time.Time      `db:"end_date"`
+	AllDay     bool           `db:"all_day"`
 	Title      string         `db:"title"`
 	Attendees  pq.StringArray `db:"attendees"`
 	Location   string         `db:"location"`
@@ -24,6 +34,11 @@ type Event struct {
 	Resources  sql.NullString `db:"resources"`
 	Comment    sql.NullString `db:"comment"`
 	Type       sql.NullString `db:"type"`
+}
+
+func (e *Event) DayDuration() int {
+	d := e.End.Sub(e.Start)
+	return round(d.Hours() / 24)
 }
 
 // EventsCollection represents a collection of Event instances.
@@ -38,15 +53,24 @@ func (ec EventsCollection) EmitICal() goics.Componenter {
 
 	// Generate a component for each event.
 	for _, ev := range ec {
-		var desc string
+		var desc, k, v string
 		s := goics.NewComponent()
 		s.SetType("VEVENT")
 		s.AddProperty("SUMMARY", ev.Title)
 
-		k, v := goics.FormatDateTimeField("DTSTART", ev.Start)
-		s.AddProperty(k, v)
-		k, v = goics.FormatDateTimeField("DTEND", ev.End)
-		s.AddProperty(k, v)
+		if ev.AllDay {
+			k, v = goics.FormatDateField("DTSTART", ev.Start)
+			s.AddProperty(k, v)
+			if ev.DayDuration() > 1 {
+				k, v = goics.FormatDateField("DTEND", ev.End)
+				s.AddProperty(k, v)
+			}
+		} else {
+			k, v = goics.FormatDateTimeField("DTSTART", ev.Start)
+			s.AddProperty(k, v)
+			k, v = goics.FormatDateTimeField("DTEND", ev.End)
+			s.AddProperty(k, v)
+		}
 
 		s.AddProperty("UID", strconv.Itoa(ev.ID))
 
