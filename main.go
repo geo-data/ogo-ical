@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	reaper "github.com/ramr/go-reaper"
 )
 
 // config stores the program configuration.
@@ -29,6 +31,9 @@ func init() {
 }
 
 func main() {
+	//  Start background reaping of orphaned child processes.
+	go reaper.Reap()
+
 	flag.Parse()
 
 	// Connect to the data source.

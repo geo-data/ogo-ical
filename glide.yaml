@@ -19,3 +19,4 @@ import:
   subpackages:
   - unix
 - package: github.com/tockins/realize
+- package: github.com/ramr/go-reaper
