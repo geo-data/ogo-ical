@@ -8,21 +8,31 @@ import (
 // CalendarHandler creates a http.Handler for dealing with calendar requests.
 func CalendarHandler(store *Store) http.Handler {
 	handler := func(w http.ResponseWriter, r *http.Request) {
-		// Set up iCalendar headers.
-		w.Header().Set("Content-type", "text/calendar")
-		w.Header().Set("charset", "utf-8")
-		w.Header().Set("Content-Disposition", "inline")
-		w.Header().Set("filename", "calendar.ics")
-
 		q := r.URL.Query()
+		// Limit requests to those including a user and or match.  This prevents
+		// downloads of an entire calendar database.
+		if len(q["user"]) == 0 && len(q["match"]) == 0 {
+			http.Error(w, "Forbidden.", 403)
+			log.Printf("Forbidden for %s", r.URL)
+			return
+		}
+
 		// Get the matching events.
 		if collection, err := store.Events(q["user"], q["match"]); err != nil {
 			http.Error(w, err.Error(), 500)
 			log.Print(err)
+			return
 		} else {
+			// Set up iCalendar headers.
+			w.Header().Set("Content-type", "text/calendar")
+			w.Header().Set("charset", "utf-8")
+			w.Header().Set("Content-Disposition", "inline")
+			w.Header().Set("filename", "calendar.ics")
+
 			// Encode the collection.
 			collection.Write(w)
 		}
+		return
 	}
 
 	return http.HandlerFunc(handler)
