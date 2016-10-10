@@ -61,8 +61,10 @@ func (ec EventsCollection) EmitICal() goics.Componenter {
 		if ev.AllDay {
 			k, v = goics.FormatDateField("DTSTART", ev.Start.In(time.Local))
 			s.AddProperty(k, v)
-			if ev.DayDuration() > 1 {
-				k, v = goics.FormatDateField("DTEND", ev.End.In(time.Local))
+			days := ev.DayDuration()
+			if days > 1 {
+				end := ev.Start.In(time.Local).Add(time.Duration(days) * (time.Hour * 24))
+				k, v = goics.FormatDateField("DTEND", end)
 				s.AddProperty(k, v)
 			}
 		} else {
