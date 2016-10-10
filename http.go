@@ -3,6 +3,9 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
+
+	"github.com/gorilla/handlers"
 )
 
 // CalendarHandler creates a http.Handler for dealing with calendar requests.
@@ -13,7 +16,6 @@ func CalendarHandler(store *Store) http.Handler {
 		// downloads of an entire calendar database.
 		if len(q["user"]) == 0 && len(q["match"]) == 0 {
 			http.Error(w, "Forbidden.", 403)
-			log.Printf("Forbidden for %s", r.URL)
 			return
 		}
 
@@ -35,5 +37,5 @@ func CalendarHandler(store *Store) http.Handler {
 		return
 	}
 
-	return http.HandlerFunc(handler)
+	return handlers.LoggingHandler(os.Stdout, http.HandlerFunc(handler))
 }

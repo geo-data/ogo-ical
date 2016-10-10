@@ -18,3 +18,4 @@ import:
   - unix
 - package: github.com/tockins/realize
 - package: github.com/ramr/go-reaper
+- package: github.com/gorilla/handlers
