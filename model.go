@@ -59,10 +59,10 @@ func (ec EventsCollection) EmitICal() goics.Componenter {
 		s.AddProperty("SUMMARY", ev.Title)
 
 		if ev.AllDay {
-			k, v = goics.FormatDateField("DTSTART", ev.Start)
+			k, v = goics.FormatDateField("DTSTART", ev.Start.In(time.Local))
 			s.AddProperty(k, v)
 			if ev.DayDuration() > 1 {
-				k, v = goics.FormatDateField("DTEND", ev.End)
+				k, v = goics.FormatDateField("DTEND", ev.End.In(time.Local))
 				s.AddProperty(k, v)
 			}
 		} else {

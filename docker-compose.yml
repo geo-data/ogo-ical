@@ -12,6 +12,7 @@ dev:
   dockerfile: ./docker/Dockerfile
   volumes:
     - '.:/go/src/geodata/ogo-ical'
+    - '/etc/localtime:/etc/localtime:ro'
   hostname: ogo-ical
   ports:
     - "8081:8080"
