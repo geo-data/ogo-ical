@@ -23,17 +23,19 @@ func round(f float64) int {
 
 // Event represents an ical event.
 type Event struct {
-	ID         int            `db:"id"`
-	Start      time.Time      `db:"start_date"`
-	End        time.Time      `db:"end_date"`
-	AllDay     bool           `db:"all_day"`
-	Title      string         `db:"title"`
-	Attendees  pq.StringArray `db:"attendees"`
-	Location   string         `db:"location"`
-	Recurrence sql.NullString `db:"recurrence"`
-	Resources  sql.NullString `db:"resources"`
-	Comment    sql.NullString `db:"comment"`
-	Type       sql.NullString `db:"type"`
+	ID             int            `db:"id"`
+	Start          time.Time      `db:"start_date"`
+	End            time.Time      `db:"end_date"`
+	AllDay         bool           `db:"all_day"`
+	Title          string         `db:"title"`
+	OrganizerName  string         `db:"organizer_name"`
+	OrganizerEmail string         `db:"organizer_email"`
+	Attendees      pq.StringArray `db:"attendees"`
+	Location       string         `db:"location"`
+	Recurrence     sql.NullString `db:"recurrence"`
+	Resources      sql.NullString `db:"resources"`
+	Comment        sql.NullString `db:"comment"`
+	Type           sql.NullString `db:"type"`
 }
 
 func (e *Event) DayDuration() int {
@@ -89,6 +91,12 @@ func (ec EventsCollection) EmitICal() goics.Componenter {
 
 		if ev.Recurrence.Valid {
 			desc += fmt.Sprintf("Recurrence: %s\\n", strings.Title(ev.Recurrence.String))
+		}
+
+		if ev.OrganizerEmail != "" {
+			k = fmt.Sprintf("ORGANIZER;CN=%s", ev.OrganizerName)
+			v = fmt.Sprintf("MAILTO:%s", ev.OrganizerEmail)
+			s.AddProperty(k, v)
 		}
 
 		for _, a := range ev.Attendees {

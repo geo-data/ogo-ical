@@ -81,6 +81,10 @@ func (s *Store) Events(users, keywords []string) (events EventsCollection, err e
          d.resource_names,
          d.type,
          d.apt_type,
+         CASE WHEN c.firstname IS NULL AND c.name IS NULL
+              THEN c.description
+              ELSE (c.firstname || ' ' || c.name) END AS organizer_name,
+         cv.value_string AS organizer_email,
          (SELECT array_agg(CASE WHEN c.firstname IS NULL AND c.name IS NULL
                                 THEN c.description
                                 ELSE (c.firstname || ' ' || c.name) END)
@@ -88,14 +92,19 @@ func (s *Store) Events(users, keywords []string) (events EventsCollection, err e
                  date_company_assignment dc
            WHERE d.date_id = dc.date_id
              AND c.company_id = dc.company_id) AS attendees
-    FROM date_x d, date_info di
+    FROM date_x d, date_info di, company c, company_value cv
     WHERE d.date_id = di.date_id
       AND (d.start_date AT TIME ZONE 'UTC')::date >= CURRENT_DATE
+      AND c.company_id = d.owner_id
+      AND cv.company_id = c.company_id
+      AND cv.attribute = 'email1'
 )
 SELECT DISTINCT
        e.date_id AS id,
        e.title,
        e.attendees,
+       e.organizer_name,
+       e.organizer_email,
        e.start_date,
        e.end_date,
        e.all_day,
