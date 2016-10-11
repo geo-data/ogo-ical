@@ -50,6 +50,7 @@ func (ec EventsCollection) EmitICal() goics.Componenter {
 	c.SetType("VCALENDAR")
 	c.AddProperty("CALSCAL", "GREGORIAN")
 	c.AddProperty("PRODID;X-RICAL-TZSOURCE=TZINFO", "-//geodata.soton.ac.uk")
+	c.AddProperty("X-PUBLISHED-TTL", "PT1H") // Format: Duration ([RFC2445] section 4.3.6)
 
 	// Generate a component for each event.
 	for _, ev := range ec {
