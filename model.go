@@ -53,6 +53,7 @@ func (ec EventsCollection) EmitICal() goics.Componenter {
 	c.AddProperty("CALSCAL", "GREGORIAN")
 	c.AddProperty("PRODID;X-RICAL-TZSOURCE=TZINFO", "-//geodata.soton.ac.uk")
 	c.AddProperty("X-PUBLISHED-TTL", "PT1H") // Format: Duration ([RFC2445] section 4.3.6)
+	c.AddProperty("METHOD", "PUBLISH")
 
 	// Generate a component for each event.
 	for _, ev := range ec {
@@ -99,10 +100,11 @@ func (ec EventsCollection) EmitICal() goics.Componenter {
 			s.AddProperty(k, v)
 		}
 
+		/* Attendees shouldn't appear in a PUBLISH calendar.
 		for _, a := range ev.Attendees {
 			k = fmt.Sprintf("ATTENDEE;CN=%s", a)
 			s.AddProperty(k, "MAILTO:geodata@soton.ac.uk")
-		}
+		}*/
 		if len(ev.Attendees) > 0 {
 			desc += fmt.Sprintf("Attendees: %s\\n", strings.Join(ev.Attendees, ", "))
 		}
