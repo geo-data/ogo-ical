@@ -98,6 +98,7 @@ func (s *Store) Events(users, keywords []string) (events EventsCollection, err e
       AND c.company_id = d.owner_id
       AND cv.company_id = c.company_id
       AND cv.attribute = 'email1'
+      AND d.access_team_id IS NOT NULL
 )
 SELECT DISTINCT
        e.date_id AS id,
