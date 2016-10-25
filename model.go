@@ -29,7 +29,7 @@ type Event struct {
 	AllDay         bool           `db:"all_day"`
 	Title          string         `db:"title"`
 	OrganizerName  string         `db:"organizer_name"`
-	OrganizerEmail string         `db:"organizer_email"`
+	OrganizerEmail sql.NullString `db:"organizer_email"`
 	Attendees      pq.StringArray `db:"attendees"`
 	Location       string         `db:"location"`
 	Recurrence     sql.NullString `db:"recurrence"`
@@ -94,9 +94,9 @@ func (ec EventsCollection) EmitICal() goics.Componenter {
 			desc += fmt.Sprintf("Recurrence: %s\\n", strings.Title(ev.Recurrence.String))
 		}
 
-		if ev.OrganizerEmail != "" {
+		if ev.OrganizerEmail.Valid && ev.OrganizerEmail.String != "" {
 			k = fmt.Sprintf("ORGANIZER;CN=%s", ev.OrganizerName)
-			v = fmt.Sprintf("MAILTO:%s", ev.OrganizerEmail)
+			v = fmt.Sprintf("MAILTO:%s", ev.OrganizerEmail.String)
 			s.AddProperty(k, v)
 		}
 
