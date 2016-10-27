@@ -81,6 +81,7 @@ func (s *Store) Events(users, keywords []string) (events EventsCollection, err e
          d.resource_names,
          d.type,
          d.apt_type,
+         d.access_team_id IS NULL AS is_private,
          CASE WHEN c.firstname IS NULL AND c.name IS NULL
               THEN c.description
               ELSE (c.firstname || ' ' || c.name) END AS organizer_name,
@@ -94,11 +95,10 @@ func (s *Store) Events(users, keywords []string) (events EventsCollection, err e
              AND c.company_id = dc.company_id) AS attendees
     FROM date_x d, date_info di, company c, company_value cv
     WHERE d.date_id = di.date_id
-      AND (d.start_date AT TIME ZONE 'UTC')::date >= CURRENT_DATE
+      AND (d.start_date AT TIME ZONE 'UTC')::date >= (CURRENT_DATE - interval '2 mon')::date
       AND c.company_id = d.owner_id
       AND cv.company_id = c.company_id
       AND cv.attribute = 'email1'
-      AND d.access_team_id IS NOT NULL
 )
 SELECT DISTINCT
        e.date_id AS id,
@@ -111,6 +111,7 @@ SELECT DISTINCT
        e.all_day,
        e.location,
        e.comment,
+       e.is_private,
        e.resource_names AS resources,
        e.type AS recurrence,
        e.apt_type AS type

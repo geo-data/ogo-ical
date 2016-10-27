@@ -36,6 +36,7 @@ type Event struct {
 	Resources      sql.NullString `db:"resources"`
 	Comment        sql.NullString `db:"comment"`
 	Type           sql.NullString `db:"type"`
+	IsPrivate      bool           `db:"is_private"`
 }
 
 func (e *Event) DayDuration() int {
@@ -60,7 +61,6 @@ func (ec EventsCollection) EmitICal() goics.Componenter {
 		var desc, k, v string
 		s := goics.NewComponent()
 		s.SetType("VEVENT")
-		s.AddProperty("SUMMARY", ev.Title)
 
 		if ev.AllDay {
 			k, v = goics.FormatDateField("DTSTART", ev.Start.In(time.Local))
@@ -80,47 +80,59 @@ func (ec EventsCollection) EmitICal() goics.Componenter {
 
 		s.AddProperty("UID", strconv.Itoa(ev.ID))
 
-		if len(ev.Location) > 0 {
-			s.AddProperty("LOCATION", ev.Location)
-		}
-
-		if ev.Type.Valid {
-			cat := strings.Title(ev.Type.String)
-			s.AddProperty("CATEGORIES", cat)
-			desc += fmt.Sprintf("Category: %s\\n", cat)
-		}
-
-		if ev.Recurrence.Valid {
-			desc += fmt.Sprintf("Recurrence: %s\\n", strings.Title(ev.Recurrence.String))
-		}
-
 		if ev.OrganizerEmail.Valid && ev.OrganizerEmail.String != "" {
 			k = fmt.Sprintf("ORGANIZER;CN=%s", ev.OrganizerName)
 			v = fmt.Sprintf("MAILTO:%s", ev.OrganizerEmail.String)
 			s.AddProperty(k, v)
 		}
 
-		/* Attendees shouldn't appear in a PUBLISH calendar.
-		for _, a := range ev.Attendees {
-			k = fmt.Sprintf("ATTENDEE;CN=%s", a)
-			s.AddProperty(k, "MAILTO:geodata@soton.ac.uk")
-		}*/
-		if len(ev.Attendees) > 0 {
-			desc += fmt.Sprintf("Attendees: %s\\n", strings.Join(ev.Attendees, ", "))
-		}
+		if ev.IsPrivate {
+			s.AddProperty("SUMMARY", "Private appointment")
 
-		if ev.Resources.Valid {
-			s.AddProperty("RESOURCES", ev.Resources.String)
-			desc += fmt.Sprintf("Resources: %s\\n", ev.Resources.String)
-		}
+			if ev.Type.Valid {
+				cat := strings.Title(ev.Type.String)
+				s.AddProperty("CATEGORIES", cat)
+			}
 
-		if ev.Comment.Valid {
-			s.AddProperty("COMMENT", ev.Comment.String)
-			desc += fmt.Sprintf("Comment: %s\\n", ev.Comment.String)
-		}
+		} else {
+			s.AddProperty("SUMMARY", ev.Title)
 
-		if len(desc) > 0 {
-			s.AddProperty("DESCRIPTION", desc)
+			if len(ev.Location) > 0 {
+				s.AddProperty("LOCATION", ev.Location)
+			}
+
+			if ev.Type.Valid {
+				cat := strings.Title(ev.Type.String)
+				s.AddProperty("CATEGORIES", cat)
+				desc += fmt.Sprintf("Category: %s\\n", cat)
+			}
+
+			if ev.Recurrence.Valid {
+				desc += fmt.Sprintf("Recurrence: %s\\n", strings.Title(ev.Recurrence.String))
+			}
+
+			/* Attendees shouldn't appear in a PUBLISH calendar.
+			for _, a := range ev.Attendees {
+				k = fmt.Sprintf("ATTENDEE;CN=%s", a)
+				s.AddProperty(k, "MAILTO:geodata@soton.ac.uk")
+			}*/
+			if len(ev.Attendees) > 0 {
+				desc += fmt.Sprintf("Attendees: %s\\n", strings.Join(ev.Attendees, ", "))
+			}
+
+			if ev.Resources.Valid {
+				s.AddProperty("RESOURCES", ev.Resources.String)
+				desc += fmt.Sprintf("Resources: %s\\n", ev.Resources.String)
+			}
+
+			if ev.Comment.Valid {
+				s.AddProperty("COMMENT", ev.Comment.String)
+				desc += fmt.Sprintf("Comment: %s\\n", ev.Comment.String)
+			}
+
+			if len(desc) > 0 {
+				s.AddProperty("DESCRIPTION", desc)
+			}
 		}
 
 		c.AddComponent(s)
