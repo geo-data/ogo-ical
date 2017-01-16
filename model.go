@@ -39,6 +39,7 @@ type Event struct {
 	IsPrivate      bool           `db:"is_private"`
 }
 
+// DayDuration returns the duration of the event rounded to the number of days.
 func (e *Event) DayDuration() int {
 	d := e.End.Sub(e.Start)
 	return round(d.Hours() / 24)

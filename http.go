@@ -23,7 +23,6 @@ func CalendarHandler(store *Store) http.Handler {
 		if collection, err := store.Events(q["user"], q["match"]); err != nil {
 			http.Error(w, err.Error(), 500)
 			log.Print(err)
-			return
 		} else {
 			// Set up iCalendar headers.
 			w.Header().Set("Content-type", "text/calendar")
@@ -34,6 +33,7 @@ func CalendarHandler(store *Store) http.Handler {
 			// Encode the collection.
 			collection.Write(w)
 		}
+
 		return
 	}
 
