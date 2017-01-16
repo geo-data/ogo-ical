@@ -11,9 +11,9 @@ before_install:
 - curl -L http://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname
   -s`-`uname -m` > docker-compose
 - chmod +x docker-compose
-- ls -lh docker-compose
 - sudo mv docker-compose /usr/local/bin/docker-compose
-- ls -lh /usr/local/bin/docker-compose
+- cat /usr/local/biin/docker-compose
+- echo "http://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname-s`-`uname -m`"
 script:
 - ls -lh /usr/local/bin/docker-compose
 - /usr/local/bin/docker-compose help
