@@ -17,7 +17,15 @@ script:
 after_success:
 - sudo chown --changes --recursive $(whoami):$(id --group $(whoami)) .
 - if [ "$TRAVIS_BRANCH" == "master" ]; then
-  docker build -t geodata/ogo-ical:latest .
+  docker build -t geodata/ogo-ical:latest .;
   docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
   docker push geodata/ogo-ical:latest;
   fi
+deploy:
+  provider: releases
+  api_key:
+    secure: kBugvzSSGedyNaftDQCSL7HsED6TZTUME8Wk2/RysNSGMsPXs6QkYoQ7xgGPrNqKTlO0orf9BaytSf8QXhnq0UkwKEQwoj68wbx1kspW08BjBF/aW56LhixDk8mFL12Ew5E+lwVJ6sln0IR8QquHHwDXNnEkEtHsWJjO4St/+7faZTe/Ud1KTY6MHDKfAAxbTAbm2YMv0V2mwx4QZQ8cZOKSzBE82uHeLnle0ua6zvrb8iEF40G800Hu2njcc5T3tDMD2F1OnqkskLDASQfMGElp7J3l96Aq4kkW148yxEKuyTQ16IaSnOjdYZUALuYxyZsurSCibf/UQSumvifAbQzMmykehFSSh759+eof3pIutm53iLu49wM6PYVD0UKEBOhsSCE0ZWfmEmr/7Sv6/DbmSG1UD1Nw//2p29WqgppiunNdyp+fC8fc+MiStkXmxT4/ZeMszo0nXrO72nw1c808hAuZdUyCriezqbs5vtBtRvG6cfL2SQPeNxuZaUd+B+/2puKxAZdzsmGf/HBFaLF17J743q2Y7J7g6bf9wfjo3gjsrosb89IEqccRP8Pubi24PCQD+P7Kt0eHXSgK6W+DNfTn3wSP0O/ktgMbIBgG8iir+0Tcu6A2/ifLK7xgnXyK8NqMeH8n+b4V5ynFkwTX8mh0CON1734ffz9Vcqk=
+  file: ogo-ical
+  skip_cleanup: true
+  on:
+    repo: geo-data/ogo-ical

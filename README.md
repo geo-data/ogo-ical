@@ -44,6 +44,11 @@ flags respectively.
 
 ## Installation
 
+### Binary download
+
+You can download a self contained `ogo-ical` binary compiled for Linux x86_64
+from the [latest release](https://github.com/geo-data/ogo-ical/releases/latest).
+
 ### Via Docker
 
 The latest version is available from the Docker Registry at
